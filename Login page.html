@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login Form</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <style>
+    .error-msg {
+      color: #f44336;
+      font-size: 13px;
+      margin-top: 4px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <form id="loginForm" action="#">
+      <h1>Login</h1>
+      <div class="input-box">
+        <input id="username" type="text" placeholder="Username" required />
+        <div class="error-msg" id="userError"></div>
+        <i class="bx bxs-user"></i>
+      </div>
+      <div class="input-box">
+        <input id="password" type="password" placeholder="Password" required />
+        <div class="error-msg" id="passError"></div>
+        <i class="bx bxs-lock-alt"></i>
+      </div>
+      <div class="remember-forgot">
+        <label><input type="checkbox" /> Remember Me</label>
+        <a href="Reset Password Page.html".html">Forgot Password?</a>
+      </div>
+      <button type="submit" class="btn" id="loginBtn">Login</button>
+      <div class="register-link">
+        <p>Don't have an account? <a href="Register page.html">Create new account</a></p>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    async function hashText(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArr = Array.from(new Uint8Array(hashBuffer));
+      return hashArr.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    const form = document.getElementById('loginForm');
+    const userInput = document.getElementById('username');
+    const passInput = document.getElementById('password');
+    const userErr = document.getElementById('userError');
+    const passErr = document.getElementById('passError');
+    const loginBtn = document.getElementById('loginBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Clear previous errors
+      userErr.textContent = '';
+      passErr.textContent = '';
+
+      const user = userInput.value.trim();
+      const pass = passInput.value;
+
+      if (!user) {
+        userErr.textContent = 'Please enter your username.';
+        return;
+      }
+
+      if (pass.length < 8) {
+        passErr.textContent = 'Password needs to be 8+ chars.';
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Checking...';
+
+      const storedHash = localStorage.getItem('user_' + user);
+      if (!storedHash) {
+        userErr.textContent = 'User not found.';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+        return;
+      }
+
+      const hashedPass = await hashText(pass);
+      if (hashedPass !== storedHash) {
+        passErr.textContent = 'Wrong password.';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+        return;
+      }
+
+      alert(`Welcome back, ${user}!`);
+      // Redirect or further action here
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Login';
+    });
+  </script>
+</body>
+</html>

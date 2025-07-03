@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Authentication site</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <style>
+    .error-msg {
+      color: #f44336;
+      font-size: 13px;
+      margin-top: 4px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <form id="registerForm" action="#">
+      <h1>Create Account</h1>
+
+      <div class="input-box">
+        <input id="newUser" type="text" placeholder="Username" required />
+        <div class="error-msg" id="userError"></div>
+        <i class="bx bxs-user"></i>
+      </div>
+
+      <div class="input-box">
+        <input id="newEmail" type="email" placeholder="Email Address" required />
+        <div class="error-msg" id="emailError"></div>
+        <i class="bx bxs-envelope"></i>
+      </div>
+
+      <div class="input-box">
+        <input id="newPass" type="password" placeholder="Password" required />
+        <div class="error-msg" id="passError"></div>
+        <i class="bx bxs-lock-alt"></i>
+      </div>
+
+      <button type="submit" class="btn" id="registerBtn">Register</button>
+
+      <div class="register-link">
+        <p>Already have an account? <a href="Login page.html">Login</a></p>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    async function hashText(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArr = Array.from(new Uint8Array(hashBuffer));
+      return hashArr.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    const form = document.getElementById('registerForm');
+    const userInput = document.getElementById('newUser');
+    const emailInput = document.getElementById('newEmail');
+    const passInput = document.getElementById('newPass');
+    const userErr = document.getElementById('userError');
+    const emailErr = document.getElementById('emailError');
+    const passErr = document.getElementById('passError');
+    const regBtn = document.getElementById('registerBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      userErr.textContent = '';
+      emailErr.textContent = '';
+      passErr.textContent = '';
+
+      const user = userInput.value.trim();
+      const email = emailInput.value.trim();
+      const pass = passInput.value;
+
+      if (!user) {
+        userErr.textContent = 'Username is required.';
+        return;
+      }
+
+      if (!email || !/^[\w.-]+@[\w.-]+\.\w{2,}$/.test(email)) {
+        emailErr.textContent = 'Please enter a valid email.';
+        return;
+      }
+
+      if (pass.length < 8) {
+        passErr.textContent = 'Password should be 8 characters or more.';
+        return;
+      }
+
+      if (localStorage.getItem('user_' + user)) {
+        userErr.textContent = 'That username is taken.';
+        return;
+      }
+
+      regBtn.disabled = true;
+      regBtn.textContent = 'Registering...';
+
+      const hashedPass = await hashText(pass);
+      localStorage.setItem('user_' + user, hashedPass);
+      localStorage.setItem('email_' + user, email); // store email separately
+
+      alert('You’re all set! Go ahead and log in.');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>
